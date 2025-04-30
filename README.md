@@ -3,10 +3,13 @@ Project code structure
 To optimize the code, we have to improve `jacobi` and `simulate` function to begin with.
 We might be able to gain speedup with how data is loaded, but let's see.
 
+- `task2.sh` is for submitting a job. Run `bsub < task2.sh`.
+You can use it as a template or modify it as needed.
+
 - `visualize.py` module contains a function to visualize
 an initial condition and a mask for a building.
 Might be useful for debugging purposes.
-To use it, run `python visualize.py <building_id>.
+To use it, run `python visualize.py <building_id>`.
 
 
 Git basic
