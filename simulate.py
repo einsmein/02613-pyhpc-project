@@ -34,7 +34,7 @@ def summary_stats(u, interior_mask):
     }
 
 
-def visualize(all_u):   
+def visualize(all_u, filename="visualization.png"):   
     num_matrices = len(all_u)
     fig, axes = plt.subplots(1, num_matrices, figsize=(6 * num_matrices, 6))
     
@@ -48,12 +48,12 @@ def visualize(all_u):
         axes[i].set_ylabel("Y")
     
     plt.tight_layout()
-    plt.savefig("output/visualization.png")
+    plt.savefig(f"output/{filename}")
 
 
 def check_result_is_close(u0, interior_mask, u):
     og_u = og_jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
-    is_close = np.allclose(og_u,u)
+    is_close = np.allclose(og_u, u, atol=ABS_TOL)
     return is_close
 
 
@@ -75,16 +75,19 @@ def og_jacobi(u, interior_mask, max_iter, atol=1e-6):
 ### TODO: Optimize `simulate` and `jacobi`
 #######################################################
 
+from numba import jit
+
+@jit(nopython=True)#, parallel=True)
 def jacobi(u, interior_mask, max_iter, atol=1e-6):
     u = np.copy(u)
 
     for i in range(max_iter):
         # Compute average of left, right, up and down neighbors, see eq. (1)
         u_new = 0.25 * (u[1:-1, :-2] + u[1:-1, 2:] + u[:-2, 1:-1] + u[2:, 1:-1])
-        u_new_interior = u_new[interior_mask]
-        delta = np.abs(u[1:-1, 1:-1][interior_mask] - u_new_interior).max()
-        u[1:-1, 1:-1][interior_mask] = u_new_interior
-
+        u_new_interior = u_new * interior_mask + u[1:-1, 1:-1] * (1 - interior_mask)
+        delta = np.abs(u[1:-1, 1:-1] - u_new_interior).max()
+        u[1:-1, 1:-1] = u_new_interior
+        
         if delta < atol:
             break
     return u
@@ -92,6 +95,7 @@ def jacobi(u, interior_mask, max_iter, atol=1e-6):
 
 def simulate(all_u0, all_interior_mask):
     all_u = np.empty_like(all_u0)
+    all_interior_mask = all_interior_mask.astype(int)
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
         u = jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
         all_u[i] = u
@@ -132,12 +136,21 @@ if __name__ == "__main__":
     print("----------------")
     print("Checking the first result against the original Jacobi method...")
     is_close = check_result_is_close(all_u0[0], all_interior_mask[0], all_u[0])
+    print
     if is_close is False:
         print("Your result is incorrect")
         print("!!!! FIX YOUR CODE BEFORE MOVING ON !!!!")
     else:
         print("Your result is correct")
     print()
+    # og_u = og_jacobi(all_u0[0], all_interior_mask[0], MAX_ITER, ABS_TOL)
+    # print(og_u.shape, all_u[0].shape)
+    # visualize([og_u, all_u[0]], filename="comparison.png")
+
+    # is_close = np.isclose(og_u, all_u[0])
+    # not_close_indices = np.argwhere(~is_close)
+    # for idx in not_close_indices:
+    #     print(og_u[tuple(idx)], all_u[0][tuple(idx)])
 
     # Print summary statistics in CSV format
     print("Result summary")

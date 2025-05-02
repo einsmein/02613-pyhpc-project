@@ -21,4 +21,4 @@ conda activate 02613
 # python [-u] program.py
 # -u option to unbuffer the print lines so we can see in bpeek
 # or use sys.flush in the script
-/usr/bin/time -f"mem=%M KB runtime=%e s" python -u simulate.py 1
+/usr/bin/time -f"mem=%M KB runtime=%e s" python -u simulate.py 10
