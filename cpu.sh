@@ -1,9 +1,9 @@
 #!/bin/bash
-#BSUB -J project_task2
-#BSUB -o batch_output/project_task2_%J.out
-#BSUB -e batch_output/project_task2_%J.err
+#BSUB -J project_cpu
+#BSUB -o batch_output/project_cpu_%J.out
+#BSUB -e batch_output/project_cpu_%J.err
 #BSUB -q hpc
-#BSUB -W 5
+#BSUB -W 10
 #BSUB -R "rusage[mem=32GB]"
 #BSUB -R "select[model==XeonGold6226R]"
 #BSUB -n 1
